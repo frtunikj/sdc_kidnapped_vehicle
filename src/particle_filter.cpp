@@ -156,21 +156,20 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     //   3.33
     //   http://planning.cs.uiuc.edu/node99.html
 
-    cout << "### Updated weights: ###" << endl; 
-    
+   
     weights.clear();
 
     for (auto& particle : particles) {
 
-        vector<LandmarkObs> observations_map;
-        vector<LandmarkObs> predicted_obs;
+        vector<LandmarkObs> observations_map_coordinate;
+        vector<LandmarkObs> predicted_observations;
 
         // Transform observations from Sensor-frame to Map-frame
         auto x_p = particle.x;
         auto y_p = particle.y;
         auto theta = particle.theta;
 
-        observations_map.clear();
+        observations_map_coordinate.clear();
         LandmarkObs lobs;
         for (const auto& observation : observations) {
 
@@ -180,7 +179,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
             lobs.x = x_p + x * cos(theta) + y*-sin(theta);
             lobs.y = y_p + x * sin(theta) + y * cos(theta);
-            observations_map.push_back(lobs);
+            observations_map_coordinate.push_back(lobs);
         }
 
         // Get all landmarks within the sensor range (in Map-frame)
@@ -191,15 +190,15 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
                 lobs.x = landmark.x_f;
                 lobs.y = landmark.y_f;
 
-                predicted_obs.push_back(lobs);
+                predicted_observations.push_back(lobs);
             }
         }
 
-        dataAssociation(predicted_obs, observations_map);
-        SetAssociations(particle, observations_map);
+        dataAssociation(predicted_observations, observations_map_coordinate);
+        SetAssociations(particle, observations_map_coordinate);
 
         // Calculate particle weights
-        weights.push_back(calculateParticleWeight(predicted_obs, observations_map, std_landmark));
+        weights.push_back(calculateParticleWeight(predicted_observations, observations_map_coordinate, std_landmark));
     }
 }
 
